@@ -2,18 +2,21 @@
 
 
 main(){
-    cd / && \
-    export SSL_CERT_FILE=/usr/lib/ssl/certs/ca-certificates.crt
-    curl -fsSL https://get.docker.com -o get-docker.sh && \
-    sh get-docker.sh
-    sudo usermod -aG docker ${FIRST_USER_NAME}
+    if ! dpkg --verify docker-ce 2>/dev/null; then
+        cd /
+        export SSL_CERT_FILE=/usr/lib/ssl/certs/ca-certificates.crt
+        curl -fsSL https://get.docker.com -o get-docker.sh && \
+        sh get-docker.sh
+        usermod -aG docker ${FIRST_USER_NAME}
+        rm get-docker.sh
+        git clone https://github.com/devplayer0/docker-net-dhcp.git /opt/docker-net-dhcp
+    fi
 
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends -o \
         Dpkg::Options::="--force-confnew" \
         tshark dhcp-helper parprouted
-    git clone https://github.com/devplayer0/docker-net-dhcp.git /opt/docker-net-dhcp
- 
+
 
 
 cat > "/etc/default/dhcp-helper" << EOF
@@ -21,7 +24,9 @@ DHCPHELPER_OPTS="-s 255.255.255.255"
 EOF
 systemctl enable dhcp-helper.service
 
-echo "net.ipv4.ip_forward=1" >> "/etc/sysctl.conf" 
+if cat "/etc/sysctl.conf" | grep -q "net.ipv4.ip_forward=1"; then
+    echo "net.ipv4.ip_forward=1" >> "/etc/sysctl.conf"
+fi
 
 cat  > "/lib/systemd/system/wifibridge.service" << EOF
 [Unit]
