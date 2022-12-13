@@ -37,11 +37,12 @@ EOF
 	make -j20 modules_install
 	make -j20 dtbs_install
 
-	[ ! -d $INSTALL_MOD_PATH ] && mkdir $INSTALL_MOD_PATH/boot
+	[ -d $INSTALL_MOD_PATH/boot ] || mkdir $INSTALL_MOD_PATH/boot
 	./scripts/mkknlimg ./arch/arm/boot/zImage $INSTALL_MOD_PATH/boot/$KERNEL.img
 	cd $INSTALL_MOD_PATH/boot
 	mv $KERNEL.img kernel7_rt.img
-    cd $INSTALL_MOD_PATH
+    install -m 777 kernel7_rt.img /etc/
+
 }
 
 
