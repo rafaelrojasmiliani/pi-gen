@@ -3,6 +3,15 @@ log (){
 }
 export -f log
 
+################################################################################
+# Installs a Debian base system into the subdirectory specified in $2.
+# Globals:
+#     STAGE_WORK_DIR
+# Arguments:
+#     $1: Debian release, e.g. bullseye
+#     $2: Directory where download the base system
+#     $3: Repositry, e.g. http://deb.debian.org/debian/
+################################################################################
 bootstrap(){
 	local BOOTSTRAP_CMD=debootstrap
 	local BOOTSTRAP_ARGS=()
