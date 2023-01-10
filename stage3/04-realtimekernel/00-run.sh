@@ -3,9 +3,9 @@
 main(){
 # taken from https://lemariva.com/blog/2019/09/raspberry-pi-4b-preempt-rt-kernel-419y-performance-test
 # and frmom here https://www.raspberrypi.com/documentation/computers/linux_kernel.html for arm64
-    echo "-------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------"
     echo "------------------------------- cross compilation started -------------------------"
-    echo "-------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------"
     set -x
 
     local build_folder=${ROOTFS_DIR}/kernel_cross
@@ -25,14 +25,12 @@ main(){
 	export KERNEL=kernel8
 	export ARCH=arm64
 	export CROSS_COMPILE=aarch64-linux-gnu-
-	export INSTALL_MOD_PATH=$build_folder/rpi-kernel/rt-kernel
+	export INSTALL_MOD_PATH=${ROOTFS_DIR}
 	export INSTALL_DTBS_PATH=$build_folder/rpi-kernel/rt-kernel
 
 	cd $build_folder/rpi-kernel/linux/
 
 
-    echo "-------------------------------"
-    echo "------------------------------- run make"
     make clean
     make bcm2711_defconfig
     ./scripts/config --disable CONFIG_VIRTUALIZATION
@@ -55,7 +53,9 @@ EOF
 	make -j20 dtbs_install
 
 	[ -d $INSTALL_MOD_PATH/boot ] || mkdir $INSTALL_MOD_PATH/boot
-	cp ./arch/arm/boot/Image $INSTALL_MOD_PATH/boot/$KERNEL.img
+	cp ./arch/arm64/boot/Image $INSTALL_MOD_PATH/boot/$KERNEL.img
+    cp $build_folder/rpi-kernel/rt-kernel/broadcom/*  ${ROOTFS_DIR}/boot/
+    cp $build_folder/rpi-kernel/rt-kernel/overlays/* ${ROOTFS_DIR}/boot/overlays/
 
 }
 
