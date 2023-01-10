@@ -149,12 +149,14 @@ run_stage(){
 	log "End ${STAGE_DIR}"
 }
 
+# 0. Check that user is root
 if [ "$(id -u)" != "0" ]; then
 	echo "Please run as root" 1>&2
 	exit 1
 fi
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 1. Get the path of the current directory
+export BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ $BASE_DIR = *" "* ]]; then
 	echo "There is a space in the base path of pi-gen"
@@ -163,13 +165,13 @@ if [[ $BASE_DIR = *" "* ]]; then
 	exit 1
 fi
 
-export BASE_DIR
-
+# 2. Checkout configuration file
 if [ -f config ]; then
 	# shellcheck disable=SC1091
 	source config
 fi
 
+# 3. Get options (?)
 while getopts "c:" flag
 do
 	case "$flag" in
@@ -183,6 +185,7 @@ do
 	esac
 done
 
+# 4. Associate signals to this function
 term() {
 	if [ "${USE_QCOW2}" = "1" ]; then
 		log "Unloading image"
@@ -192,9 +195,7 @@ term() {
 
 trap term EXIT INT TERM
 
-export PI_GEN=${PI_GEN:-pi-gen}
-export PI_GEN_REPO=${PI_GEN_REPO:-https://github.com/RPi-Distro/pi-gen}
-
+# 5. Check variables and export them
 if [ -z "${IMG_NAME}" ]; then
 	echo "IMG_NAME not set" 1>&2
 	exit 1
@@ -266,6 +267,8 @@ export QUILT_NO_DIFF_INDEX=1
 export QUILT_NO_DIFF_TIMESTAMPS=1
 export QUILT_REFRESH_ARGS="-p ab"
 
+# 5. Load the following functions
+# - bootstrap, copy_previous, unmount, unmount_image, on_chroot. update_issue
 # shellcheck source=scripts/common
 source "${SCRIPT_DIR}/common"
 # shellcheck source=scripts/dependencies_check
